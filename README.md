@@ -1,26 +1,37 @@
 # ClaimShield AI
 
-**Healthcare Claims Analytics, Data Quality & Anomaly Detection**
+**Synthetic healthcare-claims analytics and anomaly-review pipeline with a Power BI dashboard.**
 
-ClaimShield AI is a portfolio project exploring how healthcare-claims-style data can be validated, summarized, and prioritized for human review. The initial MVP focuses on reproducible data-quality checks, SQL profiling, exploratory analysis, and an anomaly-detection baseline.
+ClaimShield AI demonstrates a reproducible data workflow: generate synthetic claims-like records, validate data quality, prepare features, score potential anomalies, export summaries, and explore results in Power BI.
 
-> **Important:** This is an educational analytics project, not a clinical or insurance decision system. An anomaly is a signal for investigation, not proof of fraud, abuse, or improper payment. Use synthetic or appropriately licensed, de-identified data only.
+> **Important:** This project uses synthetic data for educational demonstration. An anomaly flag is a review signal, not proof of fraud. This is not a validated fraud-detection system or a production healthcare decision tool.
 
-## Project goals
+## Features
 
-- Validate claim-like records and surface data-quality issues.
-- Produce clear, reproducible operational summaries.
-- Establish transparent rule-based checks and an unsupervised anomaly-detection baseline.
-- Evaluate outputs honestly and document limitations.
-- Prepare dashboard-ready outputs for Power BI.
+- Reproducible synthetic claims generation using a row count and random seed.
+- Data-quality checks, including duplicate claim identifiers and missing provider identifiers.
+- Preprocessing, feature engineering, and Isolation Forest anomaly scoring.
+- CSV exports for scored claims, KPI summaries, provider summaries, and data-quality issues.
+- Automated tests for validation, scoring, reporting invariants, and reproducibility.
+- Power BI report for executive KPIs, claim status, provider review rates, data-quality findings, and review queue.
 
-## Planned technology
+## Architecture
 
-- Python, Pandas, NumPy
-- SQL for schema definition and profiling
-- scikit-learn for anomaly detection
-- pytest for automated tests
-- Power BI for interactive reporting
+```mermaid
+flowchart TD
+    A[Seeded synthetic claims generator] --> B[Data validation]
+    B --> C[Preprocessing and feature engineering]
+    C --> D[Isolation Forest anomaly scoring]
+    B --> E[Data-quality issue report]
+    D --> F[Scored claims CSV]
+    D --> G[KPI summary CSV]
+    D --> H[Provider summary CSV]
+    E --> I[Data-quality issues CSV]
+    F --> J[Power BI dashboard]
+    G --> J
+    H --> J
+    I --> J
+```
 
 ## Repository layout
 
@@ -28,52 +39,103 @@ ClaimShield AI is a portfolio project exploring how healthcare-claims-style data
 claimshield-ai/
 ├── configs/                 # Project configuration
 ├── data/
-│   ├── raw/                 # Local source data; not committed
-│   └── processed/            # Generated/cleaned data; not committed
-├── docs/                    # Architecture, data dictionary, evaluation notes
-├── outputs/                 # Generated reports; not committed
-├── sql/                     # SQL schema and profiling queries
-├── src/claimshield/          # Python package
+│   ├── raw/                 # Local generated input data (ignored by Git)
+│   └── processed/           # Local intermediate data (ignored by Git)
+├── docs/                    # Architecture, data dictionary, evaluation and demo guide
+├── outputs/                 # Local generated reports (ignored by Git)
+├── reports/
+│   └── ClaimShield_AI_Dashboard.pbix
+├── sql/
+│   ├── schema.sql
+│   └── profiling.sql
+├── src/claimshield/         # Pipeline modules and CLI
 ├── tests/                   # Automated tests
-├── .env.example
-├── .gitignore
-├── pyproject.toml
-└── requirements.txt
+└── ...
 ```
 
-## Setup on Windows (PowerShell)
+## Requirements
 
-Run these commands from the repository root:
+- Python version compatible with `requirements.txt`
+- Git
+- Power BI Desktop to open and refresh the `.pbix` report
+
+## Setup on Windows PowerShell
+
+From the repository root:
 
 ```powershell
 py -3 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install --upgrade pip
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m pip install -e .
 ```
 
-If the `py` launcher is unavailable, use `python` instead of `py -3` when creating the environment.
+Check the Python version selected by the launcher with `py -3 --version`.
 
-## Verification
-
-After the project implementation is added, run the test suite from the repository root:
+## Run the pipeline
 
 ```powershell
-.\.venv\Scripts\python.exe -m pytest
+.\.venv\Scripts\python.exe -m claimshield.cli --rows 1000 --seed 42
 ```
 
-At the foundation stage, this command may report that no tests are collected if implementation/test files are not yet complete. Do not describe the project as verified until the tests actually pass.
+Expected generated files:
 
-## Data handling
+- `data/raw/synthetic_claims.csv`
+- `outputs/scored_claims.csv`
+- `outputs/kpi_summary.csv`
+- `outputs/provider_summary.csv`
+- `outputs/data_quality_issues.csv`
 
-- Do not commit real patient data, insurance member identifiers, credentials, or private datasets.
-- Keep local source data under `data/raw/`; generated and cleaned data belong under `data/processed/`.
-- Large generated outputs should stay out of Git unless a small, explicitly documented sample is needed.
-- Record dataset provenance, permitted use, and any synthetic-data assumptions in `docs/data_dictionary.md`.
+Generated data and reports are excluded from version control by default. Re-run the command to regenerate them locally.
 
-## Current status
+## Run tests
 
-The repository foundation is being established. Features, metrics, and test results will be documented only after they have been implemented and run.
+```powershell
+.\.venv\Scripts\python.exe -m pytest -q
+```
+
+The development checkpoint recorded **12 passed** on the user's Windows environment. Re-run tests after code changes; this result should not be assumed for a different revision or environment.
+
+## Power BI dashboard
+
+Open `reports/ClaimShield_AI_Dashboard.pbix` in Power BI Desktop. The report uses generated CSV files under `outputs/`. After regenerating outputs, refresh the imported CSV sources and reconcile KPI cards against `outputs/kpi_summary.csv`.
+
+See [dashboard documentation](docs/power_bi_dashboard.md) and [demo guide](docs/demo_guide.md).
+
+## Verified synthetic demo run
+
+For the seeded 1,000-row run recorded during development:
+
+| Metric | Observed value |
+|---|---:|
+| Input claims | 1,000 |
+| Total claim amount | ₹204,232.39 |
+| Total paid amount | ₹116,751.08 |
+| Review candidates | 50 |
+| Review-candidate rate | 5.0% |
+| Denied claims | 114 |
+| Denial rate | 11.4% |
+
+These are synthetic-data outputs, not real-world healthcare statistics or model-performance results. Regenerate the pipeline outputs to reproduce and confirm them.
+
+## Evaluation and limitations
+
+- The synthetic dataset does not establish real-world fraud labels or prevalence.
+- Isolation Forest's contamination parameter is an assumed outlier proportion for thresholding, not measured fraud prevalence or accuracy.
+- No real-world precision, recall, F1, ROC-AUC, PR-AUC, financial savings, or operational impact is claimed.
+- Provider review rates are descriptive and should be interpreted alongside claim volumes and data-quality limitations.
+- A real deployment would require privacy/security controls, domain review, labeled validation data, monitoring, governance, and human oversight.
+
+See [evaluation protocol](docs/evaluation.md).
+
+## Development workflow
+
+```powershell
+git diff --check
+.\.venv\Scripts\python.exe -m pytest -q
+git status --short
+```
 
 ## License
 
-This project is released under the MIT License. See [LICENSE](LICENSE).
+See [LICENSE](LICENSE).
