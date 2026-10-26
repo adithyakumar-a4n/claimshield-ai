@@ -1,42 +1,3 @@
-# Architecture
-
-## Current MVP flow
-
-```text
-Synthetic CSV or permitted CSV input
-              |
-              v
-     Schema / data-quality checks
-              |
-              v
-       Conservative preprocessing
-              |
-              v
-       Numeric feature engineering
-              |
-              v
-      Isolation Forest baseline
-              |
-              v
- CSV outputs for review and Power BI
-```
-
-## Components
-
-- `synthetic_data.py`: deterministic, fictional claim-like records for development.
-- `data_validation.py`: reports missing required columns, missing identifiers, duplicate claim IDs, invalid amounts, date issues, and unknown statuses.
-- `preprocessing.py`: normalizes types and strings without silently dropping records.
-- `features.py`: creates numeric features for the anomaly baseline.
-- `anomaly_detection.py`: fits Isolation Forest and marks a configurable proportion of rows as review candidates.
-- `reporting.py`: writes scored records, overall KPIs, provider summaries, and quality issues as CSV.
-- `cli.py`: runs the end-to-end pipeline.
-- `sql/`: SQLite-compatible schema and profiling queries.
-
-## Important limitations
-
-This is a portfolio MVP. Synthetic patterns are not representative of real insurance data. Isolation Forest identifies unusual combinations in the provided features; it does not determine fraud, medical necessity, or payment correctness. Production use would require domain review, data governance, privacy/security controls, robust monitoring, and validation on appropriately authorized real-world data.
-
-
 # ClaimShield AI Architecture
 
 ```mermaid
@@ -67,6 +28,19 @@ flowchart TD
 - **Anomaly detection:** uses Isolation Forest to score records and label review candidates.
 - **Reporting:** exports row-level results and summary CSV files.
 - **Power BI:** presents descriptive KPIs, claim status, provider comparisons, data-quality findings, and the review queue.
+
+## Module summary
+
+| Module | Responsibility |
+|---|---|
+| `synthetic_data.py` | Deterministic, fictional claim-like records for development |
+| `data_validation.py` | Reports missing columns, duplicate IDs, invalid amounts, and date issues |
+| `preprocessing.py` | Normalizes types and strings without silently dropping records |
+| `features.py` | Creates numeric features for the anomaly baseline |
+| `anomaly_detection.py` | Fits Isolation Forest and marks a configurable proportion of rows as review candidates |
+| `reporting.py` | Writes scored records, KPIs, provider summaries, and quality issues as CSV |
+| `cli.py` | Orchestrates the end-to-end pipeline; reads defaults from `configs/config.yaml` |
+| `sql/` | SQLite-compatible schema and profiling queries |
 
 ## Data flow
 

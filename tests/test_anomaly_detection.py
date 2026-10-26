@@ -4,13 +4,31 @@ from claimshield.anomaly_detection import score_anomalies
 from claimshield.synthetic_data import generate_synthetic_claims
 
 
-def test_anomaly_detector_returns_scores_and_labels():
+def test_anomaly_detector_returns_correct_columns_and_labels():
     frame = generate_synthetic_claims(n_rows=100, random_seed=11)
     result = score_anomalies(frame, contamination=0.05, random_state=11)
-    assert len(result.scored_claims) == len(frame)
-    assert "anomaly_score" in result.scored_claims.columns
-    assert set(result.scored_claims["anomaly_label"].unique()).issubset({"typical", "review_candidate"})
-    assert result.scored_claims["review_candidate"].any()
+    scored = result.scored_claims
+    assert len(scored) == len(frame)
+    assert "anomaly_score" in scored.columns
+    assert "review_candidate" in scored.columns
+    assert set(scored["anomaly_label"].unique()).issubset({"typical", "review_candidate"})
+
+
+def test_review_candidates_have_higher_anomaly_scores_than_typical():
+    """Review candidates must have a higher mean anomaly score than typical rows.
+
+    This verifies that the anomaly_score column is meaningful, not just a label copy.
+    IsolationForest by design assigns higher scores to more isolated (outlier) points,
+    so this assertion must hold regardless of seed.
+    """
+    frame = generate_synthetic_claims(n_rows=200, random_seed=11)
+    result = score_anomalies(frame, contamination=0.05, random_state=11)
+    scored = result.scored_claims
+    review_scores = scored.loc[scored["review_candidate"], "anomaly_score"]
+    typical_scores = scored.loc[~scored["review_candidate"], "anomaly_score"]
+    assert review_scores.mean() > typical_scores.mean(), (
+        "Review candidates should have higher anomaly scores than typical rows."
+    )
 
 
 def test_invalid_contamination_is_rejected():

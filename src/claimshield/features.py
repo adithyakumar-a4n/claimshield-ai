@@ -1,5 +1,6 @@
 """Feature engineering for claims analytics and anomaly detection."""
 from __future__ import annotations
+import numpy as np
 import pandas as pd
 
 
@@ -20,5 +21,5 @@ def build_claim_features(frame: pd.DataFrame) -> pd.DataFrame:
     features["paid_amount"] = paid_amount
     features["paid_to_claim_ratio"] = (paid_amount / claim_amount.where(claim_amount != 0)).fillna(0).clip(lower=0, upper=10)
     features["submission_delay_days"] = delay_days.fillna(0).clip(lower=0, upper=3650)
-    features["claim_amount_log1p"] = claim_amount.clip(lower=0).fillna(0).map(lambda value: __import__("math").log1p(value))
+    features["claim_amount_log1p"] = np.log1p(claim_amount.clip(lower=0).fillna(0))
     return features.replace([float("inf"), float("-inf")], 0).fillna(0)
