@@ -138,4 +138,18 @@ git status --short
 
 ## License
 
-See [LICENSE](LICENSE).
+See [LICENSE](LICENSE).## Labeled synthetic-dataset evaluation
+
+The optional evaluation module benchmarks Isolation Forest against labels in the synthetic Health Claims sample. It uses a stratified holdout split, fits preprocessing and Isolation Forest on training features only, and calculates metrics on held-out labels.
+
+```powershell
+.\.venv\Scripts\python.exe -m claimshield.evaluation --input data/external/claims_sample.csv --output-dir outputs/evaluation --contamination 0.05 --seed 42
+```
+
+Outputs:
+- `outputs/evaluation/evaluation_metrics.json`
+- `outputs/evaluation/evaluation_metrics.csv`
+- `outputs/evaluation/evaluation_predictions.csv`
+- `outputs/evaluation/confusion_matrix.csv`
+
+This evaluates generated labels only. It does not demonstrate real-world fraud detection. See `docs/dataset_card.md` and `docs/labeled_evaluation.md`.

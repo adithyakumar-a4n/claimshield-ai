@@ -49,3 +49,9 @@ outputs/*
 
 # Logs
 *.log
+# Downloaded external datasets (keep source data out of Git by default)
+data/external/*
+!data/external/.gitkeep
+
+# Evaluation outputs are reproducible artifacts
+outputs/evaluation/*
