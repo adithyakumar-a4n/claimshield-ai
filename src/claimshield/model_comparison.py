@@ -163,6 +163,7 @@ def main():
     rf_pred = supervised.predict(X_test)
     rf_scores = supervised.predict_proba(X_test)[:, 1]
     record("random_forest", rf_pred, rf_scores)
+    predictions["random_forest_score"] = pd.Series(rf_scores, index=y_test.index)
 
     # Isolation Forest's lower decision scores indicate more anomalous rows.
     if_scores = -isolation.decision_function(X_test_transformed)
