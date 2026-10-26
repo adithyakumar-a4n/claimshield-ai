@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "claimshield-ai"
+version = "0.1.0"
+description = "A reproducible healthcare claims analytics and anomaly-detection MVP using synthetic or appropriately licensed data."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+  { name = "ClaimShield AI contributors" }
+]
+dependencies = [
+  "numpy>=1.26,<3.0",
+  "pandas>=2.2,<4.0",
+  "scikit-learn>=1.4,<2.0",
+  "PyYAML>=6.0,<7.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0,<9.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-ra"

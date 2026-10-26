@@ -1,0 +1,18 @@
+project:
+  name: "ClaimShield AI"
+  environment: "development"
+  random_seed: 42
+
+paths:
+  raw_data: "data/raw"
+  processed_data: "data/processed"
+  outputs: "outputs"
+
+data:
+  # Set to the path of a synthetic or appropriately licensed dataset in a later stage.
+  input_file: null
+  target_column: null
+
+anomaly_detection:
+  contamination: 0.05
+  random_state: 42
